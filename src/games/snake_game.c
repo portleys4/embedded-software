@@ -13,16 +13,18 @@ static void Receiver(uint8_t c);
 static void Play(void);
 static void Help(void);
 
-static void Snake_Init(void);
-static uint8_t CheckCollision(void);
+static void DrawSnake(void);
+static void AddLink(void);
+static void MoveSnake(void);
 static void GameTick(void);
 static void GameOver(void);
 static void SpawnFood(void);
+static void DrawFood(void);
 
 uint8_t score;
 uint8_t game_id;
 enum snake_movements curr_direction;
-snake_link_t snake;
+snake_link_t snake[MAX_SNAKE_LENGTH];
 food_t food; 
 
 
@@ -47,85 +49,125 @@ void Callback(int argc, char * argv[]){
 void Play(void){
 
     Game_ClearScreen();
-    Game_DrawRect(0, 0, MAP_WIDTH, MAP_HEIGHT);
+    Game_DrawRect(0, 0, SNAKE_MAP_WIDTH, SNAKE_MAP_HEIGHT);
     Game_RegisterPlayer1Receiver(Receiver);
     Game_HideCursor();
-    Snake_Init();
-    //TODO: Add task to spawn food
-    Task_Schedule((task_t)GameTick, 0, 0, 500);
 
-}
+    uint8_t i;
+    for(i = 1; i<MAX_SNAKE_LENGTH; i++){
+        snake[i].xcord = 0;
+        snake[i].ycord = 0;
+        snake[i].in_play = 0;
+    }
+    score = 0;
 
-void Snake_Init(){
-    snake.xcord = MAP_WIDTH / 2;
-    snake.ycord = MAP_HEIGHT / 2;
-    snake.next_link = 0;
+    snake[0].xcord = SNAKE_MAP_WIDTH / 2;
+    snake[0].ycord = SNAKE_MAP_HEIGHT / 2;
+    snake[0].in_play = 1;
     curr_direction = UP;
-    Game_CharXY('@', snake.xcord, snake.ycord);
+    Game_CharXY(SNAKE_CHAR, snake[0].xcord, snake[0].ycord);
+
+    SpawnFood();
+    Task_Schedule((task_t)GameTick, 0, 5000, 500);
 }
+
+
+void DrawSnake(void){
+    uint8_t i;
+    for(i = 0; i < MAX_SNAKE_LENGTH; i++){
+        if(snake[i].in_play){
+            Game_CharXY(SNAKE_CHAR, snake[i].xcord, snake[i].ycord);
+        }else{
+            break;
+        }
+    } 
+}
+
+
+//Add a link at the head of the snake
+void AddLink(void){
+    uint8_t i;
+    for(i = 1; i < MAX_SNAKE_LENGTH; i++){
+        if(!snake[i].in_play){
+
+            switch(curr_direction){
+                case UP:
+                    snake[i].xcord = snake[i-1].xcord;
+                    snake[i].ycord = snake[i-1].ycord - 1;
+                    break;
+                case LEFT:
+                    snake[i].xcord = snake[i-1].xcord - 1;
+                    snake[i].ycord = snake[i-1].ycord;
+                    break;
+                case RIGHT:
+                    snake[i].xcord = snake[i-1].xcord + 1;
+                    snake[i].ycord = snake[i-1].ycord;
+                    break;
+                case DOWN:
+                    snake[i].xcord = snake[i-1].xcord;
+                    snake[i].ycord = snake[i-1].ycord + 1;
+                    break;
+            }
+            snake[i].in_play = 1;
+            return;
+        }
+    }
+
+    GameOver(); //You win!
+}
+
 
 void GameTick(void){
-    //Move snake one tile
-    //check collisions with the wall
-    //check collsision with food
 
-
-    snake_link_t new_link;
-    switch(curr_direction){
-        case UP:
-            new_link.xcord = snake.xcord;
-            new_link.ycord = snake.ycord - 1;
-            break;
-        case LEFT:
-            new_link.xcord = snake.xcord - 1;
-            new_link.ycord = snake.ycord; 
-            break;
-        case DOWN:
-            new_link.xcord = snake.xcord;
-            new_link.ycord = snake.ycord + 1;
-            break;
-        case RIGHT:
-            new_link.xcord = snake.xcord + 1;
-            new_link.ycord = snake.ycord;
-            break;
+    uint8_t i = 0;
+    while(snake[i+1].in_play){
+        i++;
     }
 
-    new_link.next_link = &snake;
-    snake = new_link;
-    Game_CharXY('@', snake.xcord, snake.ycord);
-    uint8_t is_food = CheckCollision();
-    if(!is_food){
-        //Remove last link
-        snake_link_t* prev = &snake;
-        snake_link_t* next = snake.next_link; 
-        while(next->next_link){
-            prev = prev->next_link;
-            next = next->next_link; 
+    if(snake[i].xcord <= 0 || snake[i].xcord >= SNAKE_MAP_WIDTH){
+        GameOver();
+    }
+
+    if(snake[i].ycord <= 0 || snake[i].ycord >= SNAKE_MAP_HEIGHT){
+        GameOver();
+    }
+
+    if(snake[i].xcord == food.xcord && snake[i].ycord == food.ycord){
+        score++;
+        SpawnFood();
+        AddLink();
+    }else{
+        MoveSnake();
+    }
+
+    Draw_Snake();
+    DrawFood();
+
+}
+
+void MoveSnake(void){
+
+    Game_CharXY(0x20, snake[0].xcord, snake[0].ycord);
+    AddLink();
+
+    uint8_t i;
+    for(i = 1; i < MAX_SNAKE_LENGTH; i++){
+        if(snake[i].in_play){
+            snake[i-1] = snake[i];
+        }else{
+            break;
         }
-        prev->next_link = 0;
-        Game_CharXY(' ', next->xcord, next->ycord); 
     }
+
+    snake[i-1].in_play = 0;
+    snake[i-1].xcord = 0;
+    snake[i-1].ycord = 0;
 
 }
 
 
-
-uint8_t CheckCollision(void){
-    if(snake.xcord <= 0 || snake.xcord >= MAP_WIDTH){
-        GameOver();
-    }
-
-    if(snake.ycord <= 0 || snake.ycord >= MAP_HEIGHT){
-        GameOver();
-    }
-
-    if(snake.xcord == food.xcord && snake.ycord == food.ycord){
-        score++;
-        SpawnFood();
-        return 1; //Return 1 when food found
-    }
-
-    return 0; //return when no food
+void DrawFood(void){
+    Game_CharXY(FOOD_CHAR, food.xcord, food.ycord);
 }
 
 
@@ -134,9 +176,11 @@ void SpawnFood(void){
 
     //we just picked up food, so we don't need to clear current spot
 
-    food.xcord = random_int(1, MAP_WIDTH-1);
-    food.ycord = random_int(1, MAP_HEIGHT-1);
-    Game_CharXY(food.food_char, food.xcord, food.ycord);
+    food.xcord = random_int(1, SNAKE_MAP_WIDTH-1);
+    food.ycord = random_int(1, SNAKE_MAP_HEIGHT-1);
+    DrawFood();
+
+
 }
 
 void Receiver(uint8_t c){
@@ -152,24 +196,22 @@ void Receiver(uint8_t c){
         case 's':
         case 'S':
             curr_direction = DOWN;
+            break;
         case 'd':
         case 'D':
             curr_direction = RIGHT;
+            break;
         default:
             break;
     }
 }
 
 void GameOver(){
-
-
     //cleanup
-
-    Game_CharXY('\r', 0, MAP_HEIGHT + 1);
-
-    Game_Printf("Game Over! Final score: %d", score);
+    Task_Remove(GameTick, 0);
     Game_UnregisterPlayer1Receiver(Receiver);
-
+    Game_CharXY('\r', 0, SNAKE_MAP_HEIGHT + 1);
+    Game_Printf("Game Over! Final score: %d", score);
     Game_ShowCursor();
     Game_GameOver();
 
