@@ -68,7 +68,7 @@ void Play(void){
     Game_CharXY(SNAKE_CHAR, snake[0].xcord, snake[0].ycord);
 
     SpawnFood();
-    Task_Schedule((task_t)GameTick, 0, 5000, 500);
+    Task_Schedule((task_t)GameTick, 0, 3000, SNAKE_SPEED);
 }
 
 
@@ -124,13 +124,25 @@ void GameTick(void){
         i++;
     }
 
+
     if(snake[i].xcord <= 0 || snake[i].xcord >= SNAKE_MAP_WIDTH){
         GameOver();
+        return;
     }
 
     if(snake[i].ycord <= 0 || snake[i].ycord >= SNAKE_MAP_HEIGHT){
         GameOver();
+        return;
     }
+
+    uint8_t j;
+    for(j = 0; j<i; j++){
+        if(snake[j].xcord == snake[i].xcord && snake[j].ycord == snake[i].ycord){
+            GameOver();
+            return;
+        }
+    }
+
 
     if(snake[i].xcord == food.xcord && snake[i].ycord == food.ycord){
         score++;
@@ -140,7 +152,7 @@ void GameTick(void){
         MoveSnake();
     }
 
-    Draw_Snake();
+    DrawSnake();
     DrawFood();
 
 }
@@ -187,19 +199,19 @@ void Receiver(uint8_t c){
     switch(c){
         case 'w':
         case 'W':
-            curr_direction = UP;
+            if(curr_direction != DOWN) curr_direction = UP;
             break;
         case 'a':
         case 'A':
-            curr_direction = LEFT;
+            if(curr_direction != RIGHT) curr_direction = LEFT;
             break;
         case 's':
         case 'S':
-            curr_direction = DOWN;
+            if(curr_direction != UP) curr_direction = DOWN;
             break;
         case 'd':
         case 'D':
-            curr_direction = RIGHT;
+            if(curr_direction != LEFT) curr_direction = RIGHT;
             break;
         default:
             break;
