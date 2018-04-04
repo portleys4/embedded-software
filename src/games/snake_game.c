@@ -1,5 +1,5 @@
 #include "snake_game.h"
-#include "system.h"
+#include "project_settings.h"
 #include "random_int.h"
 #include "game.h"
 #include "timing.h"

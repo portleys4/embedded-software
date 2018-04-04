@@ -4,10 +4,10 @@
 #include <stdint.h>
 #include "list.h"
 
-#define SNAKE_MAP_WIDTH 30
-#define SNAKE_MAP_HEIGHT 30
+#define SNAKE_MAP_WIDTH 40
+#define SNAKE_MAP_HEIGHT 40
 
-#define SNAKE_SPEED 250 //Time between each snake movement, lower -> faster snake
+#define SNAKE_SPEED 150 //Time between each snake movement, lower -> faster snake
 #define MAX_SNAKE_LENGTH 45 //You win the game when you reach this length
 
 #define FOOD_CHAR '*'
