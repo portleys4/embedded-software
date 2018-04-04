@@ -21,11 +21,11 @@ static void GameOver(void);
 static void SpawnFood(void);
 static void DrawFood(void);
 
-uint8_t score;
+uint8_t score; //Current score of the game, increments by 1 whenever food is picked up
 uint8_t game_id;
-enum snake_movements curr_direction;
-snake_link_t snake[MAX_SNAKE_LENGTH];
-food_t food; 
+enum snake_movements curr_direction; //Current direction that the snake is moving
+snake_link_t snake[MAX_SNAKE_LENGTH]; //The entire snake, index 0 is the tail and it grows from the head
+food_t food; //The current food on the map
 
 
 void SnakeGame_Init(void){
@@ -34,6 +34,7 @@ void SnakeGame_Init(void){
     Game_RegisterCallback(game_id, Callback);
 }
 
+//Print the directions for playing the game
 void Help(void){
     Game_Printf("WASD to change the direction of the snake, collect the food without hitting yourself or a wall");
 }
@@ -46,13 +47,17 @@ void Callback(int argc, char * argv[]){
     }else Game_Log(game_id, "command not supported");
 }
 
+
+//Starts the game
 void Play(void){
 
+    //Initial setup
     Game_ClearScreen();
     Game_DrawRect(0, 0, SNAKE_MAP_WIDTH, SNAKE_MAP_HEIGHT);
     Game_RegisterPlayer1Receiver(Receiver);
     Game_HideCursor();
 
+    //Reset everything
     uint8_t i;
     for(i = 1; i<MAX_SNAKE_LENGTH; i++){
         snake[i].xcord = 0;
@@ -61,17 +66,21 @@ void Play(void){
     }
     score = 0;
 
+    //Start the snake in the middle of the map
     snake[0].xcord = SNAKE_MAP_WIDTH / 2;
     snake[0].ycord = SNAKE_MAP_HEIGHT / 2;
     snake[0].in_play = 1;
     curr_direction = UP;
     Game_CharXY(SNAKE_CHAR, snake[0].xcord, snake[0].ycord);
 
+    //Spawn some food
     SpawnFood();
+
+    //Move the snake every SNAKE_SPEED milliseconds
     Task_Schedule((task_t)GameTick, 0, 3000, SNAKE_SPEED);
 }
 
-
+//Draw the current state of the snake
 void DrawSnake(void){
     uint8_t i;
     for(i = 0; i < MAX_SNAKE_LENGTH; i++){
@@ -84,7 +93,7 @@ void DrawSnake(void){
 }
 
 
-//Add a link at the head of the snake
+//Add a link at the head of the snake based on the current direction of the snake
 void AddLink(void){
     uint8_t i;
     for(i = 1; i < MAX_SNAKE_LENGTH; i++){
@@ -117,24 +126,31 @@ void AddLink(void){
 }
 
 
+/**
+ * Called every SNAKE_SPEED milliseconds
+ * Checks if you hit yourself or a wall or food, moves the snake
+ */
 void GameTick(void){
 
+    //Since index 0 of the snake is the tail, we need to find the head
     uint8_t i = 0;
     while(snake[i+1].in_play){
         i++;
     }
 
-
+    //Did you hit a wall?
     if(snake[i].xcord <= 0 || snake[i].xcord >= SNAKE_MAP_WIDTH){
         GameOver();
         return;
     }
 
+    //Did you hit a wall?
     if(snake[i].ycord <= 0 || snake[i].ycord >= SNAKE_MAP_HEIGHT){
         GameOver();
         return;
     }
 
+    //Did you hit yourself?
     uint8_t j;
     for(j = 0; j<i; j++){
         if(snake[j].xcord == snake[i].xcord && snake[j].ycord == snake[i].ycord){
@@ -143,20 +159,26 @@ void GameTick(void){
         }
     }
 
-
+    //Did you pickup food?
     if(snake[i].xcord == food.xcord && snake[i].ycord == food.ycord){
         score++;
-        SpawnFood();
-        AddLink();
+        SpawnFood(); //Respawn food
+        AddLink();   //Add a new link to the head where the food was
     }else{
         MoveSnake();
     }
 
+    //Update the image
+    //Drawing the snake comes first so that if food is spawned on top of one of the links it will still appear
     DrawSnake();
     DrawFood();
 
 }
 
+/**
+ * Move the snake by one by add a new link at the head and removing the link at the tail
+ * Shifting everything over by one
+ */
 void MoveSnake(void){
 
     Game_CharXY(0x20, snake[0].xcord, snake[0].ycord);
@@ -171,19 +193,20 @@ void MoveSnake(void){
         }
     }
 
+    //Remove
     snake[i-1].in_play = 0;
     snake[i-1].xcord = 0;
     snake[i-1].ycord = 0;
 
 }
 
-
+//Draw the food
 void DrawFood(void){
     Game_CharXY(FOOD_CHAR, food.xcord, food.ycord);
 }
 
 
-
+//Randomly spawn food somewhere within the map
 void SpawnFood(void){
 
     //we just picked up food, so we don't need to clear current spot
@@ -195,6 +218,11 @@ void SpawnFood(void){
 
 }
 
+/**
+ * Handle user input
+ * You cannot immediately change the direction of the snake by 180
+ * because you would just instantly hit yourself
+ */
 void Receiver(uint8_t c){
     switch(c){
         case 'w':
@@ -218,8 +246,8 @@ void Receiver(uint8_t c){
     }
 }
 
+//Cleanup
 void GameOver(){
-    //cleanup
     Task_Remove(GameTick, 0);
     Game_UnregisterPlayer1Receiver(Receiver);
     Game_CharXY('\r', 0, SNAKE_MAP_HEIGHT + 1);
