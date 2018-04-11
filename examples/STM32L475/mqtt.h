@@ -42,7 +42,7 @@ Iot_Error_t MQTT_Unsubscribe(char* topic);
 /**
 * callback - Callback handler for when the connection is interrupted
 */
-Iot_Error_t MQTT_StatusHandler(void (*callback)(int));
+Iot_Error_t MQTT_StatusHandler(void (*callback)(ClientState clientState));
 
 
 #endif

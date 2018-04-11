@@ -1,8 +1,9 @@
 #include "mqtt.h"
+#include "aws_iot_mqtt_client.h"
 
 
 static AWS_IoT_Client client;
-
+static void Disconnect_Handler(void (*callback)(ClientState clientState))
 
 IoT_Error_t MQTT_Init(){
 	const char *serverAddress = NULL;
@@ -56,6 +57,13 @@ Iot_Error_t MQTT_Unsubscribe(char* topic){
 	
 }
 
-Iot_Error_t MQTT_StatusHandler(void (*callback)(int)){
-    aws_iot_mqtt_set_disconnect_handler(&client, 
+
+Iot_Error_t MQTT_StatusHandler(void (*callback)(ClientState clientState)){
+    return aws_iot_mqtt_set_disconnect_handler(&client, Disconnect_Handler, callback);
+}
+
+
+void Disconnect_Handler(void (*callback)(ClientState clientState)){
+    ClientState currState = aws_iot_mqtt_get_client_state(&client);
+    callback(currState);
 }
