@@ -1,3 +1,4 @@
+#include "main.h"
 #include "mqtt.h"
 #include "aws_iot_mqtt_client.h"
 #include "aws_iot_error.h"
@@ -69,7 +70,7 @@ IoT_Error_t MQTT_Init(void){
 	return rc;
 }
 
-Iot_Error_t MQTT_Subscribe(char* topic, uint16_t topicLen, QoS qos, void (*callback)(char* data, char* message), char* pData){
+IoT_Error_t MQTT_Subscribe(char* topic, uint16_t topicLen, QoS qos, void (*callback)(char* data, char* message), char* pData){
 
 
 }

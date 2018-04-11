@@ -10,7 +10,7 @@
 /**
 * Initalize the MQTT Device
 */
-Iot_Error_t MQTT_Init(void);
+IoT_Error_t MQTT_Init(void);
 
 /**
 * Subscribe to a topic
@@ -22,7 +22,7 @@ Iot_Error_t MQTT_Init(void);
 * @param data - Any data external data that the 
 * @param pData - Pointer to data that gets sent to the callback handler
 */
-Iot_Error_t MQTT_Subscribe(char* topic, uint16_t topicLen, QoS qos, void (*callback)(char* data, char*message), char* pData);
+IoT_Error_t MQTT_Subscribe(char* topic, uint16_t topicLen, QoS qos, void (*callback)(char* data, char*message), char* pData);
 
 /**
 * Publish to a topic
@@ -33,7 +33,7 @@ Iot_Error_t MQTT_Subscribe(char* topic, uint16_t topicLen, QoS qos, void (*callb
 * @param pData - Data being published
 * @param dLen - Length of the data
 */
-Iot_Error_t MQTT_Publish(char* topic, uint16_t topicLen, QoS qos, char* pData, size_t dLen);
+IoT_Error_t MQTT_Publish(char* topic, uint16_t topicLen, QoS qos, char* pData, size_t dLen);
 
 /**
 * Unsubscribe from a topic
