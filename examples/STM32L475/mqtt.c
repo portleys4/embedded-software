@@ -58,6 +58,8 @@ Iot_Error_t MQTT_Unsubscribe(char* topic){
 }
 
 
+//We register Disconnect_Handler with the internal AWS function
+//So that we get the current state of the client when disconnect occurs
 Iot_Error_t MQTT_StatusHandler(void (*callback)(ClientState clientState)){
     return aws_iot_mqtt_set_disconnect_handler(&client, Disconnect_Handler, callback);
 }
