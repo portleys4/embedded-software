@@ -10,7 +10,7 @@
 /**
 * Initalize the MQTT Device
 */
-Iot_Error_t MQTT_Init();
+Iot_Error_t MQTT_Init(void);
 
 /**
 * Subscribe to a topic
@@ -22,7 +22,7 @@ Iot_Error_t MQTT_Init();
 * @param data - Any data external data that the 
 * @param pData - Pointer to data that gets sent to the callback handler
 */
-Iot_Error_t MQTT_Subscribe(char* topic, uint16_t topicLen, QOS qos, void (*callback)(char* data, char*message), char* pData);
+Iot_Error_t MQTT_Subscribe(char* topic, uint16_t topicLen, QoS qos, void (*callback)(char* data, char*message), char* pData);
 
 /**
 * Publish to a topic
@@ -33,7 +33,7 @@ Iot_Error_t MQTT_Subscribe(char* topic, uint16_t topicLen, QOS qos, void (*callb
 * @param pData - Data being published
 * @param dLen - Length of the data
 */
-Iot_Error_t MQTT_Publish(char* topic, unint16_t topicLen, QOS qos, char* pData, size_t dLen);
+Iot_Error_t MQTT_Publish(char* topic, uint16_t topicLen, QoS qos, char* pData, size_t dLen);
 
 /**
 * Unsubscribe from a topic
@@ -41,13 +41,13 @@ Iot_Error_t MQTT_Publish(char* topic, unint16_t topicLen, QOS qos, char* pData, 
 * @param topic - The topic to unsubscribe from
 * @param topicLen - Length of the topic
 */
-Iot_Error_t MQTT_Unsubscribe(char* topic, uint16_t topicLen);
+IoT_Error_t MQTT_Unsubscribe(char* topic, uint16_t topicLen);
 
 /**
 * callback - Callback handler for when the connection is interrupted
 * clientState - The current state of the client when the MQTT connection is dropped
 */
-Iot_Error_t MQTT_StatusHandler(void (*callback)(ClientState clientState));
+IoT_Error_t MQTT_StatusHandler(void (*callback)(ClientState clientState));
 
 
 #endif
