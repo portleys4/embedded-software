@@ -1,7 +1,7 @@
 #include "mqtt.h"
 
 
-int MQTT_Init(){
+IoT_Error_t MQTT_Init(){
 	const char *serverAddress = NULL;
 	const char *pCaCert;
 	const char *pClientCert;
@@ -31,23 +31,22 @@ int MQTT_Init(){
 
 	if(rc != 0){
 		msg_error("aws_iot_mqtt_init error");
-		return -1;
 	}	
-	return 0;
+	return rc;
 }
 
-MQTT_Subscribe(char* topic, QOS qos, void (*callback)(char* data), char* pData){
+Iot_Error_t MQTT_Subscribe(char* topic, QOS qos, void (*callback)(char* data), char* pData){
 	
 }
 
-MQTT_Publish(char* topic, QOS qos, char* pData, uint8_t len){
+Iot_Error_t MQTT_Publish(char* topic, QOS qos, char* pData, uint8_t len){
 	
 }
 
-MQTT_Unsubscribe(char* topic){
+Iot_Error_t MQTT_Unsubscribe(char* topic){
 	
 }
 
-MQTT_StatusHandler(void (*callback)(int)){
+Iot_Error_t MQTT_StatusHandler(void (*callback)(int)){
 	
 }
