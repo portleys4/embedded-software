@@ -70,15 +70,10 @@ IoT_Error_t MQTT_Init(){
 
 Iot_Error_t MQTT_Subscribe(char* topic, uint16_t topicLen, QOS qos, void (*callback)(char* data), char* pData){
 
-    aws_iot_mqtt_subscribe(&client, topic, topicLen, qos, ApplicationHandler, callback);
 
 }
 
 
-void ApplicationHandler(AWS_IoT_Client *pClient, char *pTopicName, uint16_t topicNameLen,
-                                      IoT_Publish_Message_Params *pParams, void *pClientData){
-    
-}
 
 
 
