@@ -41,7 +41,12 @@ MQTT_Subscribe(char* topic, QOS qos, void (*callback)(char* data), char* pData){
 }
 
 MQTT_Publish(char* topic, QOS qos, char* pData, uint8_t len){
-	
+    IoT_Error_t rc = FAILURE;
+    IoT_Publish_Message_Params *publishParams = {qos, 0, 0, 0, pData, len};
+    AWS_IoT_Client client;
+    memset(&client, 0, sizeof(AWS_IoT_Client));
+        
+    rc = aws_iot_mqtt_publish(&client, topic, len, publishParams);
 }
 
 MQTT_Unsubscribe(char* topic){
