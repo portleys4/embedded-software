@@ -1,6 +1,9 @@
 #include "mqtt.h"
 
 
+static AWS_IoT_Client client;
+
+
 IoT_Error_t MQTT_Init(){
 	const char *serverAddress = NULL;
 	const char *pCaCert;
@@ -9,7 +12,6 @@ IoT_Error_t MQTT_Init(){
 	static IoT_Error_t rc = FAILURE;
 	static IoT_Client_Init_Params mqttInitParams;
 
-	AWS_IoT_Client client;
 	memset(&client, 0, sizeof(AWS_IoT_Client));
 	IoT_Client_Init_Params mqttInitParams = iotClientInitParamsDefault;
 	
@@ -42,7 +44,6 @@ Iot_Error_t MQTT_Subscribe(char* topic, QOS qos, void (*callback)(char* data), c
 Iot_Error_t MQTT_Publish(char* topic, QOS qos, char* pData, uint8_t len)
     IoT_Error_t rc = FAILURE;
     IoT_Publish_Message_Params *publishParams = {qos, 0, 0, 0, pData, len};
-    AWS_IoT_Client client;
     memset(&client, 0, sizeof(AWS_IoT_Client));
         
     rc = aws_iot_mqtt_publish(&client, topic, len, publishParams);
@@ -56,5 +57,5 @@ Iot_Error_t MQTT_Unsubscribe(char* topic){
 }
 
 Iot_Error_t MQTT_StatusHandler(void (*callback)(int)){
-	
+    aws_iot_mqtt_set_disconnect_handler(&client, 
 }
