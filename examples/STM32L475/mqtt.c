@@ -38,23 +38,35 @@ IoT_Error_t MQTT_Init(){
 	return rc;
 }
 
-Iot_Error_t MQTT_Subscribe(char* topic, QOS qos, void (*callback)(char* data), char* pData){
-	
+Iot_Error_t MQTT_Subscribe(char* topic, uint16_t topicLen, QOS qos, void (*callback)(char* data), char* pData){
+
+    aws_iot_mqtt_subscribe(&client, topic, topicLen, qos, ApplicationHandler, callback);
+
 }
 
-Iot_Error_t MQTT_Publish(char* topic, QOS qos, char* pData, uint8_t len)
+
+void ApplicationHandler(AWS_IoT_Client *pClient, char *pTopicName, uint16_t topicNameLen,
+                                      IoT_Publish_Message_Params *pParams, void *pClientData){
+    
+}
+
+
+
+
+Iot_Error_t MQTT_Publish(char* topic, uint16_t topicLen, QOS qos, char* pData, size_t dLen){ 
+
     IoT_Error_t rc = FAILURE;
-    IoT_Publish_Message_Params *publishParams = {qos, 0, 0, 0, pData, len};
+    IoT_Publish_Message_Params *publishParams = {qos, 0, 0, 0, pData, dLen};
     memset(&client, 0, sizeof(AWS_IoT_Client));
         
-    rc = aws_iot_mqtt_publish(&client, topic, len, publishParams);
+    rc = aws_iot_mqtt_publish(&client, topic, topicLen, publishParams);
 	
 	return rc;
 }	
 
 
-Iot_Error_t MQTT_Unsubscribe(char* topic){
-	
+Iot_Error_t MQTT_Unsubscribe(char* topic, uint16_t topicLen){
+    aws_iot_mqtt_unsubscribe(&client, topic, topicLen);
 }
 
 
@@ -65,7 +77,7 @@ Iot_Error_t MQTT_StatusHandler(void (*callback)(ClientState clientState)){
 }
 
 
-void Disconnect_Handler(void (*callback)(ClientState clientState)){
-    ClientState currState = aws_iot_mqtt_get_client_state(&client);
+void Disconnect_Handler(AWS_IoT_Client* theClient, void (*callback)(ClientState clientState)){
+    ClientState currState = aws_iot_mqtt_get_client_state(theClient);
     callback(currState);
 }
