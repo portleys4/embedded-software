@@ -5,6 +5,7 @@
 #include "aws_iot_mqtt_client.h"
 #include "aws_iot_error.h"
 
+#define MQTT_CONNECT_MAX_ATTEMPT_COUNT 3
 
 /**
 * Initalize the MQTT Device

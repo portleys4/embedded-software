@@ -3,7 +3,12 @@
 
 
 static AWS_IoT_Client client;
-static void Disconnect_Handler(void (*callback)(ClientState clientState))
+static IoT_Client_Init_Params mqttInitParams;
+static IoT_Client_Connect_Params connectParams;
+
+
+static void Disconnect_Handler(void (*callback)(ClientState clientState));
+
 
 IoT_Error_t MQTT_Init(){
 	const char *serverAddress = NULL;
@@ -11,10 +16,9 @@ IoT_Error_t MQTT_Init(){
 	const char *pClientCert;
 	const char *pClientPrivateKey;
 	static IoT_Error_t rc = FAILURE;
-	static IoT_Client_Init_Params mqttInitParams;
 
 	memset(&client, 0, sizeof(AWS_IoT_Client));
-	IoT_Client_Init_Params mqttInitParams = iotClientInitParamsDefault;
+	mqttInitParams = iotClientInitParamsDefault;
 	
 	getServerAddress(&serverAddress);
 	getTLSKeys(&pCaCert, &pClientCert, &pClientPrivateKey);
@@ -34,7 +38,33 @@ IoT_Error_t MQTT_Init(){
 
 	if(rc != 0){
 		msg_error("aws_iot_mqtt_init error");
+        return rc
 	}	
+
+	getIoTDeviceConfig(&pDeviceName);
+    connectParams.keepAliveIntervalInSec = 30;
+    connectParams.isCleanSession = true;
+    connectParams.MQTTVersion = MQTT_3_1_1;
+    connectParams.pClientID = (char *) pDeviceName;
+    connectParams.clientIDLen = (uint16_t) strlen(pDeviceName);
+    connectParams.isWillMsgPresent = false;
+    connectCounter = 0;
+	do{
+		rc = aws_iot_mqtt_connect(&client, &connectParams);
+		connectCount++;
+	}while(rc != AWS_SUCCESS || (connectCount > MQTT_CONNECT_MAX_ATTEMPT_COUNT))
+
+	if(AWS_SUCCESS != rc){
+		msg_error("MQTT connection failed");
+		return rc;
+	}
+
+	rc = aws_iot_mqtt_autoreconnect_set_status(&client, true);
+	if(AWS_SUCCESS != rc) {
+		msg_error("Unable to set Auto Reconnect to true - %d\n", rc);
+		return rc;
+	}
+
 	return rc;
 }
 
