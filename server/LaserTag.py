@@ -5,25 +5,26 @@ import time
 
 aws_client = AWS("server", 
 "a213qaaw8pshxz.iot.us-east-1.amazonaws.com", 
-"/home/steven/Desktop/AWS_Certs/RootCA",
-"/home/steven/Desktop/AWS_Certs/fc21dd6d85-private.pem.key",
-"/home/steven/Desktop/AWS_Certs/fc21dd6d85-certificate.pem.crt")
+"/home/steve/Desktop/AWS_Certs/RootCA",
+"/home/steve/Desktop/AWS_Certs/fc21dd6d85-private.pem.key",
+"/home/steve/Desktop/AWS_Certs/fc21dd6d85-certificate.pem.crt")
 
 players = {}
 player_id_counter = 1
-playing_game = False
 
 
 def register_player(client, userdata, message):
     global player_id_counter
-    player_name = json.loads(message.payload)["player_name"]
+    player_name = json.loads(message.payload)["player_name"].encode("ascii")
     this_player = Player(player_name, player_id_counter)
     player_id_counter += 1
+    print(player_name +  " has joined the game")
     players[player_name] = this_player
 
 def unregister_player(client, userdata, message):
     player_name = json.loads(message.payload)["player_name"]
     del players[player_name]
+    print(player_name + " has left the game")
 
 def player_shoot(client, userdata, message):
     """
@@ -36,22 +37,21 @@ def player_shoot(client, userdata, message):
             players[player].add_shots(shots_fired)
             break
 
+#this currently publishes with the victim in the topic
+#we need to look up the shooter name with the shoot ID
+#and look up the victim ID using the victim name
+#then publish to $aws/things/server/" + shooterName + "/gottem", {"victim_ID" : victimID}
 def player_hit(client, userdata, message):
     for player in players.keys():
         if player in message.topic:
-            players[player].damage(20)
+            players[player].damage(25)
             aws_client.AWS_Publish("$aws/things/server/" + player + "/gottem", {"shooter_ID" : message.payload})
 
 aws_client.AWS_Subscribe("$aws/things/server/lasertag/register", register_player)
 aws_client.AWS_Subscribe("$aws/things/server/lasertag/unregister", unregister_player)
 
-while not playing_game:
-    usr_input = raw_input("Type start to start the game once all players are registered:\n")
-    print usr_input
-    if usr_input == "start":
-        print "test"
-        playing_game = True
-
+print("Starting the game in 30 seconds")
+time.sleep(30)
 
 """
 Subscribe to topics for all players in game
@@ -61,6 +61,8 @@ for player_name in players.keys():
     aws_client.AWS_Subscribe("$aws/things/server/lasertag/" + player_name + "/shoot", player_shoot)
     aws_client.AWS_Subscribe("$aws/things/server/lasertag/" + player_name + "/hit", player_hit)
 
+playing_game = True
+
 print("Starting game!")
-while(playing_game):
-    print("Playing game")
+while playing_game:
+    time.sleep(5)
