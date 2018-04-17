@@ -5,9 +5,9 @@ import time
 
 aws_client = AWS("server", 
 "a213qaaw8pshxz.iot.us-east-1.amazonaws.com", 
-"/home/steve/Desktop/AWS_Certs/RootCA",
-"/home/steve/Desktop/AWS_Certs/fc21dd6d85-private.pem.key",
-"/home/steve/Desktop/AWS_Certs/fc21dd6d85-certificate.pem.crt")
+"/home/steven/Desktop/AWS_Certs/RootCA",
+"/home/steven/Desktop/AWS_Certs/fc21dd6d85-private.pem.key",
+"/home/steven/Desktop/AWS_Certs/fc21dd6d85-certificate.pem.crt")
 
 players = {}
 player_id_counter = 1
@@ -29,10 +29,11 @@ def player_shoot(client, userdata, message):
     """
     Number of shots player has taken since the last time it was recorded
     """
-
     for player in players.keys():
         if player in message.topic:
-            players[player].add_shots(int(message.payload))
+            shots_fired = json.loads(message.payload)["shots_fired"]
+            shots_fired = int(shots_fired)
+            players[player].add_shots(shots_fired)
             break
 
 def player_hit(client, userdata, message):
@@ -51,8 +52,14 @@ while not playing_game:
         print "test"
         playing_game = True
 
-aws_client.AWS_Subscribe("$aws/things/server/lasertag/#/shoot", player_shoot)
-aws_client.AWS_Subscribe("$aws/things/server/lasertag/#/hit", player_hit)
+
+"""
+Subscribe to topics for all players in game
+Using wildcards doesn't seem to work?
+"""
+for player_name in players.keys():
+    aws_client.AWS_Subscribe("$aws/things/server/lasertag/" + player_name + "/shoot", player_shoot)
+    aws_client.AWS_Subscribe("$aws/things/server/lasertag/" + player_name + "/hit", player_hit)
 
 print("Starting game!")
 while(playing_game):
