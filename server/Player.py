@@ -1,11 +1,12 @@
 class Player:
-    def __init__(self, name, player_id):
+    def __init__(self, name, player_id, team):
         self.name = name
         self.player_id = player_id
         self.shots = 0
         self.health = 100
         self.lives = 3
         self.score = 0
+        self.team = team
 
     def add_score(self, points):
         self.score += points
