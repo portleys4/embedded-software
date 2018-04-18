@@ -1,5 +1,6 @@
 from AWS import AWS
 from Player import Player
+from Team import Team
 import json
 import time
 
@@ -10,6 +11,9 @@ aws_client = AWS("server",
 "/home/steven/Desktop/AWS_Certs/fc21dd6d85-certificate.pem.crt")
 
 players = {}
+team1 = Team("red", {})
+team2 = Team("blue", {})
+
 player_id_counter = 1
 playing_game = False
 
@@ -17,9 +21,11 @@ playing_game = False
 def register_player(client, userdata, message):
     global player_id_counter
     player_name = json.loads(message.payload)["player_name"]
+    preferred_team = json.loads(message.payload)["preferred_team"]
     this_player = Player(player_name, player_id_counter)
     player_id_counter += 1
     players[player_name] = this_player
+    player_team = json.loads(message.payload)["player_name"]
 
 def unregister_player(client, userdata, message):
     player_name = json.loads(message.payload)["player_name"]
