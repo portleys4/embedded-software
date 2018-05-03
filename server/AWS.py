@@ -15,3 +15,7 @@ class AWS:
     def AWS_Publish(self, topic, payload):
         JSONPayload = json.dumps(payload)
         self.client.publish(topic, JSONPayload, 0)
+
+    def AWS_Unsubscribe(self, topic):
+        self.client.unsubscribe(topic)
+

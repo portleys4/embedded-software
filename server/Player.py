@@ -28,6 +28,8 @@ class Player(object):
         else:
             self.health -= damage
         return False
+    def get_name(self):
+        return self.name
 
     def add_shots(self, shots):
         self.shots += shots
@@ -36,6 +38,21 @@ class Players(object):
     def __init__(self):
         self.players = {}
         self.player_counter = 0
+
+    def player_hit(self, victim_name, shooter_id, damage):
+        victim = self.players[victim_name]
+        for player in self.players:
+            if player.player_id == shooter_id:
+                shooter = player
+        else:
+            return -1 
+        if victim.team_name == shooter.team_name:
+            return 0 #Friendly fire
+        if self.damage_player(victim_name, damage):
+            self.add_score(shooter.name, 10)
+        else:
+            self.add_score(shooter.name, 1)
+        return shooter.name
 
     def add_player(self, player_name, preferred_team = "Default"):
         self.players[player_name] = Player(player_name, self.player_counter, preferred_team)
