@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "game.h": "c",
+        "project_settings.h": "c",
+        "modify_char_objects.h": "c",
+        "timing.h": "c"
+    }
+}
