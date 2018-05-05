@@ -48,13 +48,15 @@ class Players(object):
     def player_hit(self, victim_name, shooter_id, damage):
         victim = self.players[victim_name]
         for player in self.players.values():
+            print("Player ID: " + str(player.player_id))
+            print("Shooter ID: " + str(shooter_id))
             if player.player_id == shooter_id:
                 shooter = player
                 break
         else:
             return -1 
         if victim.team_name == shooter.team_name:
-            print("Friendly fire between " + victim_name + " and " + shooter.name)
+            print("Friendly fire between " + str(victim_name) + " and " + str(shooter.name))
             return 0 #Friendly fire
         if self.damage_player(victim_name, damage):
             self.add_score(shooter.name, 10)
@@ -63,7 +65,6 @@ class Players(object):
         return shooter.name
 
     def add_player(self, player_name, preferred_team = None):
-        print(preferred_team)
         if preferred_team == "team1":
             self.players[player_name] = Player(player_name, self.player_counter, "team1")
             self.team1.append({"name" : player_name, "id" : self.player_counter})

@@ -23,9 +23,9 @@ RULES = {
 
 aws_client = AWS("server", 
 "a213qaaw8pshxz.iot.us-east-1.amazonaws.com", 
-"/home/steven/Desktop/AWS_Certs/RootCA",
-"/home/steven/Desktop/AWS_Certs/fc21dd6d85-private.pem.key",
-"/home/steven/Desktop/AWS_Certs/fc21dd6d85-certificate.pem.crt")
+"/home/steve/Desktop/AWS_Certs/RootCA",
+"/home/steve/Desktop/AWS_Certs/fc21dd6d85-private.pem.key",
+"/home/steve/Desktop/AWS_Certs/fc21dd6d85-certificate.pem.crt")
 
 Game_Players = Players()
 
@@ -39,6 +39,9 @@ def register_player(client, userdata, message):
     message.payload = json_clean(message.payload)
     jsonMessage = json.loads(message.payload)
     player_name = jsonMessage["player_name"].encode("ascii")
+    if player_name in Game_Players.players:
+        print("Player " + player_name + " already registered")
+        return
     if "preferred_team" in jsonMessage:
         preferred_team = jsonMessage["preferred_team"].encode("ascii")
         Game_Players.add_player(player_name, preferred_team)
@@ -55,11 +58,12 @@ def player_shoot(client, userdata, message):
     """
     Number of shots player has taken since the last time it was recorded
     """
+    print(message.payload)
     message.payload = json_clean(message.payload)
     player_name = message.topic.encode("ascii")
     player_name = player_name[12:]
     player_name = player_name[:-15]
-    shots_fired = json.loads(message.payload)["shots_fired"]
+    shots_fired = json.loads(message.payload)["shots"]
     shots_fired = int(shots_fired)
     Game_Players.add_shots(player_name, shots_fired)
 
@@ -81,7 +85,9 @@ def player_hit(client, userdata, message):
         aws_client.AWS_Publish(topic, {"victim_ID" : victim_id})
         print(shooter_name + " has hit " + victim_name)
     else:
-        print("Friendly fire between" + shooter_name + " and " + victim_name)
+        print("Shooter name: " + str(shooter_name))
+        print("Victim name: " + str(victim_name))
+        print("Friendly fire between " + shooter_name + " and " + victim_name)
 
 
 aws_client.AWS_Subscribe("$aws/things/server/lasertag/register", register_player)

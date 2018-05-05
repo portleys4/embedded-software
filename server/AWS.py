@@ -3,6 +3,9 @@ import json
 
 
 class AWS:
+    """
+    Wrapper class for AWS IoT Services
+    """
     def __init__(self, clientID, endpoint, CA_path, PK_path, Cert_path):
         self.client = AWSIoTMQTTClient(clientID)
         self.client.configureEndpoint(endpoint, 8883)
